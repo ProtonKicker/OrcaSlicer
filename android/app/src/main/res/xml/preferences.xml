@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/pref_category_general">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="dark_theme"
+            android:summary="@string/pref_dark_theme_summary"
+            android:title="@string/pref_dark_theme_title" />
+
+        <ListPreference
+            android:defaultValue="en"
+            android:entries="@array/language_entries"
+            android:entryValues="@array/language_values"
+            android:key="language"
+            android:title="@string/pref_language_title"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_printing">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="auto_center"
+            android:summary="@string/pref_auto_center_summary"
+            android:title="@string/pref_auto_center_title" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="auto_arrange"
+            android:summary="@string/pref_auto_arrange_summary"
+            android:title="@string/pref_auto_arrange_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_advanced">
+        <SeekBarPreference
+            android:defaultValue="4"
+            android:key="thread_count"
+            android:max="16"
+            android:min="1"
+            android:title="@string/pref_thread_count_title"
+            app:showSeekBarValue="true" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="expert_mode"
+            android:summary="@string/pref_expert_mode_summary"
+            android:title="@string/pref_expert_mode_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_file_handling">
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="auto_save"
+            android:summary="@string/pref_auto_save_summary"
+            android:title="@string/pref_auto_save_title" />
+
+        <EditTextPreference
+            android:defaultValue="OrcaSlicer"
+            android:key="default_export_folder"
+            android:title="@string/pref_default_export_folder_title"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_about">
+        <Preference
+            android:key="version"
+            android:summary="1.0.0"
+            android:title="@string/pref_version_title" />
+
+        <Preference
+            android:key="licenses"
+            android:summary="@string/pref_licenses_summary"
+            android:title="@string/pref_licenses_title" />
+
+        <Preference
+            android:key="github"
+            android:summary="@string/pref_github_summary"
+            android:title="@string/pref_github_title" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

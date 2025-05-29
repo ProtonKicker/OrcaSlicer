@@ -1,0 +1,73 @@
+<resources>
+    <!-- 应用名称 -->
+    <string name="app_name">OrcaSlicer</string>
+    
+    <!-- 主界面按钮 -->
+    <string name="import_model">导入</string>
+    <string name="slice">切片</string>
+    <string name="settings">设置</string>
+    
+    <!-- 状态消息 -->
+    <string name="loading">加载中…</string>
+    <string name="processing">处理中…</string>
+    <string name="slicing">切片中…</string>
+    <string name="ready">就绪</string>
+    <string name="error">错误</string>
+    
+    <!-- 设置类别 -->
+    <string name="pref_category_general">常规设置</string>
+    <string name="pref_category_printing">打印设置</string>
+    <string name="pref_category_advanced">高级设置</string>
+    <string name="pref_category_file_handling">文件处理</string>
+    <string name="pref_category_about">关于</string>
+    
+    <!-- 常规设置 -->
+    <string name="pref_dark_theme_title">深色主题</string>
+    <string name="pref_dark_theme_summary">使用深色主题显示应用程序</string>
+    <string name="pref_language_title">语言</string>
+    
+    <!-- 打印设置 -->
+    <string name="pref_auto_center_title">自动居中</string>
+    <string name="pref_auto_center_summary">导入模型时自动居中到打印平台</string>
+    <string name="pref_auto_arrange_title">自动排列</string>
+    <string name="pref_auto_arrange_summary">自动排列多个模型以优化打印</string>
+    
+    <!-- 高级设置 -->
+    <string name="pref_thread_count_title">线程数量</string>
+    <string name="pref_expert_mode_title">专家模式</string>
+    <string name="pref_expert_mode_summary">显示所有高级设置选项</string>
+    
+    <!-- 文件处理 -->
+    <string name="pref_auto_save_title">自动保存</string>
+    <string name="pref_auto_save_summary">自动保存项目和设置</string>
+    <string name="pref_default_export_folder_title">默认导出文件夹</string>
+    
+    <!-- 关于 -->
+    <string name="pref_version_title">版本</string>
+    <string name="pref_licenses_title">开源许可</string>
+    <string name="pref_licenses_summary">查看第三方库许可信息</string>
+    <string name="pref_github_title">GitHub</string>
+    <string name="pref_github_summary">访问OrcaSlicer GitHub仓库</string>
+    
+    <!-- 切片质量 -->
+    <string name="quality_draft">草稿</string>
+    <string name="quality_normal">正常</string>
+    <string name="quality_high">高质量</string>
+    <string name="quality_ultra">超高质量</string>
+    
+    <!-- 对话框 -->
+    <string name="dialog_ok">确定</string>
+    <string name="dialog_cancel">取消</string>
+    <string name="dialog_yes">是</string>
+    <string name="dialog_no">否</string>
+    <string name="dialog_save">保存</string>
+    <string name="dialog_discard">放弃</string>
+    
+    <!-- 错误消息 -->
+    <string name="error_loading_model">加载模型失败</string>
+    <string name="error_slicing">切片失败</string>
+    <string name="error_saving">保存失败</string>
+    
+    <!-- 其他 -->
+    <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+</resources>

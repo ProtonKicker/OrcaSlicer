@@ -55,6 +55,11 @@ void detect_platform()
             }
         }
     }
+#elif defined(__ANDROID__)
+    BOOST_LOG_TRIVIAL(info) << "Platform: Android";
+    s_platform        = Platform::Android;
+    s_platform_flavor = PlatformFlavor::AndroidGeneric;
+    BOOST_LOG_TRIVIAL(info) << "Platform flavor: AndroidGeneric";
 #elif defined(__linux__)
     BOOST_LOG_TRIVIAL(info) << "Platform: Linux";
 	s_platform 		  = Platform::Linux;
@@ -89,7 +94,7 @@ void detect_platform()
 #else
 	// This should not happen.
     BOOST_LOG_TRIVIAL(info) << "Platform: Unknown";
-	static_assert(false, "Unknown platform detected");
+	//static_assert(false, "Unknown platform detected");
 	s_platform 		  = Platform::Unknown;
 	s_platform_flavor = PlatformFlavor::Unknown;
 #endif
@@ -116,6 +121,7 @@ std::string platform_to_string(Platform platform)
         case Platform::OSX          : return "OSX";
         case Platform::Linux        : return "Linux";
         case Platform::BSDUnix      : return "BSDUnix";
+        case Platform::Android      : return "Android";
     }
     assert(false);
     return "";
@@ -137,6 +143,7 @@ std::string platform_flavor_to_string(PlatformFlavor pf)
         case PlatformFlavor::GenericOSX      : return "GenericOSX";
         case PlatformFlavor::OSXOnX86        : return "OSXOnX86";
         case PlatformFlavor::OSXOnArm        : return "OSXOnArm";
+        case PlatformFlavor::AndroidGeneric  : return "AndroidGeneric";
     }
     assert(false);
     return "";

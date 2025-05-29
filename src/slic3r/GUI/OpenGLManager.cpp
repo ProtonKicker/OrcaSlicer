@@ -7,7 +7,11 @@
 
 #include "libslic3r/Platform.hpp"
 
+#ifndef __ANDROID__
 #include <GL/glew.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -241,12 +245,13 @@ OpenGLManager::~OpenGLManager()
 bool OpenGLManager::init_gl(bool popup_error)
 {
     if (!m_gl_initialized) {
+#ifndef __ANDROID__
         GLenum result = glewInit();
         if (result != GLEW_OK) {
             BOOST_LOG_TRIVIAL(error) << "Unable to init glew library";
             return false;
         }
-	//BOOST_LOG_TRIVIAL(info) << "glewInit Success."<< std::endl;
+        //BOOST_LOG_TRIVIAL(info) << "glewInit Success."<< std::endl;
         m_gl_initialized = true;
         if (GLEW_EXT_texture_compression_s3tc)
             s_compressed_textures_supported = true;
@@ -265,7 +270,24 @@ bool OpenGLManager::init_gl(bool popup_error)
             s_framebuffers_type = EFramebufferType::Unknown;
             BOOST_LOG_TRIVIAL(warning) << "Found Framebuffer Type unknown!"<< std::endl;
         }
+#else
+        // For Android, we use GLES3 which doesn't require GLEW
+        m_gl_initialized = true;
+        
+        // Check for texture compression support
+        s_compressed_textures_supported = false;
+        if (glGetString(GL_EXTENSIONS)) {
+            const char* extensions = (const char*)glGetString(GL_EXTENSIONS);
+            if (strstr(extensions, "GL_EXT_texture_compression_s3tc") != nullptr) {
+                s_compressed_textures_supported = true;
+            }
+        }
+        
+        // For Android, we always use framebuffer objects as they are core in GLES3
+        s_framebuffers_type = EFramebufferType::Arb;
+#endif
 
+#ifndef __ANDROID__
         bool valid_version = s_gl_info.is_version_greater_or_equal_to(2, 0);
         if (!valid_version) {
             BOOST_LOG_TRIVIAL(error) << "Found opengl version <= 2.0"<< std::endl;
@@ -278,6 +300,30 @@ bool OpenGLManager::init_gl(bool popup_error)
                 wxMessageBox(message, _L("Unsupported OpenGL version"), wxOK | wxICON_ERROR);
             }
         }
+#else
+        // Check OpenGL ES version
+        bool valid_version = false;
+        const char* version = (const char*)glGetString(GL_VERSION);
+        BOOST_LOG_TRIVIAL(info) << "OpenGL ES version: " << (version ? version : "unknown");
+        
+        if (version) {
+            // OpenGL ES version string format: "OpenGL ES <major>.<minor> <vendor-specific info>"
+            if (strstr(version, "OpenGL ES") != nullptr) {
+                const char* ver_ptr = version + 10; // Skip "OpenGL ES "
+                int major = ver_ptr[0] - '0';
+                valid_version = (major >= 3);
+            }
+        }
+        
+        if (!valid_version) {
+            BOOST_LOG_TRIVIAL(error) << "OpenGL ES version is lower than 3.0";
+            if (popup_error) {
+                // In Android, we would show a dialog or toast message
+                // This would be implemented in the Java/Kotlin layer
+            }
+            return false;
+        }
+#endif
 
         if (valid_version)
         {
@@ -318,6 +364,7 @@ bool OpenGLManager::init_gl(bool popup_error)
 
 wxGLContext* OpenGLManager::init_glcontext(wxGLCanvas& canvas)
 {
+#ifndef __ANDROID__
     if (m_context == nullptr) {
         m_context = new wxGLContext(&canvas);
 
@@ -329,10 +376,17 @@ wxGLContext* OpenGLManager::init_glcontext(wxGLCanvas& canvas)
 #endif //__APPLE__
     }
     return m_context;
+#else
+    // On Android, we don't use wxGLContext
+    // Instead, we use EGL context which is managed separately
+    // This is just a stub to maintain API compatibility
+    return nullptr;
+#endif
 }
 
 wxGLCanvas* OpenGLManager::create_wxglcanvas(wxWindow& parent)
 {
+#ifndef __ANDROID__
     int attribList[] = {
         WX_GL_RGBA,
         WX_GL_DOUBLEBUFFER,
@@ -361,10 +415,17 @@ wxGLCanvas* OpenGLManager::create_wxglcanvas(wxWindow& parent)
         attribList[12] = 0;
 
     return new wxGLCanvas(&parent, wxID_ANY, attribList, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+#else
+    // On Android, we don't use wxGLCanvas
+    // Instead, we use ANativeWindow which is provided by the Android system
+    // This is just a stub to maintain API compatibility
+    return nullptr;
+#endif
 }
 
 void OpenGLManager::detect_multisample(int* attribList)
 {
+#ifndef __ANDROID__
     int wxVersion = wxMAJOR_VERSION * 10000 + wxMINOR_VERSION * 100 + wxRELEASE_NUMBER;
     bool enable_multisample = wxVersion >= 30003;
     s_multisample =
@@ -376,7 +437,11 @@ void OpenGLManager::detect_multisample(int* attribList)
         ? EMultisampleState::Enabled : EMultisampleState::Disabled;
     // Alternative method: it was working on previous version of wxWidgets but not with the latest, at least on Windows
     // s_multisample = enable_multisample && wxGLCanvas::IsExtensionSupported("WGL_ARB_multisample");
+#else
+    // On Android, we always try to enable multisampling if the device supports it
+    // The actual support is determined when creating the EGL config
+    s_multisample = EMultisampleState::Enabled;
+#endif
 }
-
 } // namespace GUI
 } // namespace Slic3r

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 语言选项 -->
+    <string-array name="language_entries">
+        <item>English</item>
+        <item>简体中文</item>
+        <item>繁體中文</item>
+        <item>Deutsch</item>
+        <item>Español</item>
+        <item>Français</item>
+        <item>Italiano</item>
+        <item>日本語</item>
+        <item>한국어</item>
+        <item>Polski</item>
+        <item>Português</item>
+        <item>Русский</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>en</item>
+        <item>zh_CN</item>
+        <item>zh_TW</item>
+        <item>de</item>
+        <item>es</item>
+        <item>fr</item>
+        <item>it</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>pl</item>
+        <item>pt</item>
+        <item>ru</item>
+    </string-array>
+
+    <!-- 打印机类型选项 -->
+    <string-array name="printer_type_entries">
+        <item>FDM</item>
+        <item>SLA</item>
+        <item>DLP</item>
+    </string-array>
+
+    <string-array name="printer_type_values">
+        <item>fdm</item>
+        <item>sla</item>
+        <item>dlp</item>
+    </string-array>
+
+    <!-- 切片质量选项 -->
+    <string-array name="slice_quality_entries">
+        <item>@string/quality_draft</item>
+        <item>@string/quality_normal</item>
+        <item>@string/quality_high</item>
+        <item>@string/quality_ultra</item>
+    </string-array>
+
+    <string-array name="slice_quality_values">
+        <item>draft</item>
+        <item>normal</item>
+        <item>high</item>
+        <item>ultra</item>
+    </string-array>
+</resources>
