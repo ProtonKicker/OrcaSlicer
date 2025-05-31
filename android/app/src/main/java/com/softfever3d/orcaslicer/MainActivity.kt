@@ -10,6 +10,7 @@ import android.view.SurfaceView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.softfever3d.orcaslicer.databinding.ActivityMainBinding
 
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         val dataPath = applicationContext.filesDir.absolutePath
         
         // 初始化本地OrcaSlicer
-        nativePtr = nativeInit(dataPath)
+        nativePtr = NativeInterface.initialize(dataPath)
         
         if (nativePtr == 0L) {
             // 初始化失败
@@ -104,41 +105,45 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 Toast.LENGTH_LONG
             ).show()
             finish()
+            return
         }
+        
+        // 应用设置到本地代码
+        SettingsActivity.applySettingsToNative(this)
     }
 
     // SurfaceHolder.Callback实现
     override fun surfaceCreated(holder: SurfaceHolder) {
         // 通知本地代码表面已创建
-        nativeOnSurfaceCreated(nativePtr, holder.surface)
+        NativeInterface.onSurfaceCreated(nativePtr, holder.surface)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         // 通知本地代码表面已更改
-        nativeOnSurfaceChanged(nativePtr, holder.surface, width, height)
+        NativeInterface.onSurfaceChanged(nativePtr, holder.surface, width, height)
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         // 通知本地代码表面已销毁
-        nativeOnSurfaceDestroyed(nativePtr)
+        NativeInterface.onSurfaceDestroyed(nativePtr)
     }
 
     override fun onResume() {
         super.onResume()
         // 通知本地代码应用程序已恢复
-        nativeOnResume(nativePtr)
+        NativeInterface.onResume(nativePtr)
     }
 
     override fun onPause() {
         super.onPause()
         // 通知本地代码应用程序已暂停
-        nativeOnPause(nativePtr)
+        NativeInterface.onPause(nativePtr)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         // 释放本地资源
-        nativeDestroy(nativePtr)
+        NativeInterface.destroy(nativePtr)
         nativePtr = 0
     }
 
@@ -158,16 +163,37 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
     }
 
-    // 导入模型的本地方法
+    // 导入模型的方法
     private fun importModel(modelPath: String) {
-        // 调用本地方法导入模型
-        nativeImportModel(nativePtr, modelPath)
+        // 调用本地接口导入模型
+        val success = NativeInterface.importModel(nativePtr, modelPath)
+        
+        if (!success) {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_loading_model),
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
     }
 
-    // 开始切片的本地方法
+    // 开始切片的方法
     private fun startSlicing() {
-        // 调用本地方法开始切片
-        nativeStartSlicing(nativePtr)
+        // 调用本地接口开始切片
+        val success = NativeInterface.startSlicing(nativePtr)
+        
+        if (!success) {
+            // 如果启动切片失败，恢复UI状态
+            isSlicing = false
+            binding.btnSlice.isEnabled = true
+            binding.progressBar.hide()
+            
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_slicing),
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
     }
 
     // 切片完成的回调方法（由本地代码调用）
@@ -194,21 +220,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
     }
 
-    // 本地方法声明
-    private external fun nativeInit(dataPath: String): Long
-    private external fun nativeOnSurfaceCreated(nativePtr: Long, surface: Surface)
-    private external fun nativeOnSurfaceChanged(nativePtr: Long, surface: Surface, width: Int, height: Int)
-    private external fun nativeOnSurfaceDestroyed(nativePtr: Long)
-    private external fun nativeOnResume(nativePtr: Long)
-    private external fun nativeOnPause(nativePtr: Long)
-    private external fun nativeDestroy(nativePtr: Long)
-    private external fun nativeImportModel(nativePtr: Long, modelPath: String)
-    private external fun nativeStartSlicing(nativePtr: Long)
-
     companion object {
-        // 加载本地库
-        init {
-            System.loadLibrary("orcaslicer")
-        }
+        // 空的companion object，本地方法已移至NativeInterface类
     }
 }
