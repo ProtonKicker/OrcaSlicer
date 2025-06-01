@@ -1,15 +1,19 @@
 package com.softfever3d.orcaslicer
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import com.softfever3d.orcaslicer.databinding.ActivityMainBinding
@@ -34,8 +38,9 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
                     importModel(modelPath)
                     
                     // 显示成功消息
+                    val rootView = findViewById<android.view.View>(android.R.id.content)
                     Snackbar.make(
-                        binding.root,
+                        rootView,
                         "已导入模型: $modelName",
                         Snackbar.LENGTH_SHORT
                     ).show()
@@ -47,36 +52,53 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        // 根据屏幕方向加载不同的布局
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_main_landscape)
+        } else {
+            binding = ActivityMainBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+        }
         
-        setSupportActionBar(binding.toolbar)
+        // 设置工具栏
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         
         // 初始化OpenGL渲染表面
-        binding.surfaceView.holder.addCallback(this)
+        val surfaceView = findViewById<SurfaceView>(R.id.surfaceView)
+        surfaceView.holder.addCallback(this)
         
         // 设置按钮点击事件
         setupButtons()
         
         // 初始化本地OrcaSlicer
         initializeNative()
+        
+        // 设置模型信息显示区域（如果存在）
+        if (findViewById<TextView>(R.id.textModelInfo) != null) {
+            updateModelInfo()
+        }
     }
 
     private fun setupButtons() {
         // 导入按钮
-        binding.btnImport.setOnClickListener {
+        val btnImport = findViewById<MaterialButton>(R.id.btnImport)
+        btnImport.setOnClickListener {
             val intent = Intent(this, ImportActivity::class.java)
             importLauncher.launch(intent)
         }
         
         // 切片按钮
-        binding.btnSlice.setOnClickListener {
+        val btnSlice = findViewById<MaterialButton>(R.id.btnSlice)
+        btnSlice.setOnClickListener {
             if (!isSlicing) {
                 isSlicing = true
-                binding.btnSlice.isEnabled = false
+                btnSlice.isEnabled = false
                 
                 // 显示进度条
-                binding.progressBar.show()
+                val progressBar = findViewById<CircularProgressIndicator>(R.id.progressBar)
+                progressBar.show()
                 
                 // 调用本地方法开始切片
                 startSlicing()
@@ -84,7 +106,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         
         // 设置按钮
-        binding.btnSettings.setOnClickListener {
+        val btnSettings = findViewById<MaterialButton>(R.id.btnSettings)
+        btnSettings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
@@ -168,9 +191,13 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         // 调用本地接口导入模型
         val success = NativeInterface.importModel(nativePtr, modelPath)
         
-        if (!success) {
+        if (success) {
+            // 更新模型信息
+            updateModelInfo()
+        } else {
+            val rootView = findViewById<android.view.View>(android.R.id.content)
             Snackbar.make(
-                binding.root,
+                rootView,
                 getString(R.string.error_loading_model),
                 Snackbar.LENGTH_LONG
             ).show()
@@ -185,38 +212,56 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         if (!success) {
             // 如果启动切片失败，恢复UI状态
             isSlicing = false
-            binding.btnSlice.isEnabled = true
-            binding.progressBar.hide()
+            val btnSlice = findViewById<MaterialButton>(R.id.btnSlice)
+            btnSlice.isEnabled = true
             
+            val progressBar = findViewById<CircularProgressIndicator>(R.id.progressBar)
+            progressBar.hide()
+            
+            val rootView = findViewById<android.view.View>(android.R.id.content)
             Snackbar.make(
-                binding.root,
+                rootView,
                 getString(R.string.error_slicing),
                 Snackbar.LENGTH_LONG
             ).show()
         }
     }
 
-    // 切片完成的回调方法（由本地代码调用）
-    @Suppress("unused")
-    private fun onSlicingFinished(success: Boolean) {
+    // 切片完成回调
+    fun onSlicingFinished(success: Boolean) {
         runOnUiThread {
             isSlicing = false
-            binding.btnSlice.isEnabled = true
-            binding.progressBar.hide()
+            val btnSlice = findViewById<MaterialButton>(R.id.btnSlice)
+            btnSlice.isEnabled = true
             
+            val progressBar = findViewById<CircularProgressIndicator>(R.id.progressBar)
+            progressBar.hide()
+            
+            val rootView = findViewById<android.view.View>(android.R.id.content)
             if (success) {
-                Snackbar.make(
-                    binding.root,
-                    "切片完成",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                Snackbar.make(rootView, "切片成功！", Snackbar.LENGTH_LONG).show()
+                // 更新模型信息（如果视图存在）
+                if (findViewById<TextView>(R.id.textModelInfo) != null) {
+                    updateModelInfo()
+                }
             } else {
-                Snackbar.make(
-                    binding.root,
-                    "切片失败",
-                    Snackbar.LENGTH_LONG
-                ).show()
+                Snackbar.make(rootView, "切片失败！", Snackbar.LENGTH_LONG).show()
             }
+        }
+    }
+    
+    /**
+     * 更新模型信息显示区域
+     */
+    private fun updateModelInfo() {
+        val textModelInfo = findViewById<TextView>(R.id.textModelInfo) ?: return
+        
+        // 获取模型信息
+        val modelInfo = NativeInterface.getModelInfo(nativePtr)
+        if (modelInfo.isNotEmpty()) {
+            textModelInfo.text = modelInfo
+        } else {
+            textModelInfo.text = "无模型信息"
         }
     }
 

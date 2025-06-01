@@ -2,6 +2,7 @@ package com.softfever3d.orcaslicer
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -9,11 +10,15 @@ import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.softfever3d.orcaslicer.databinding.ActivityImportBinding
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ImportActivity : AppCompatActivity() {
 
@@ -29,19 +34,30 @@ class ImportActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        binding = ActivityImportBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        // 根据屏幕方向加载不同的布局
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_import_landscape)
+        } else {
+            binding = ActivityImportBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+        }
         
-        setSupportActionBar(binding.toolbar)
+        // 设置工具栏
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.import_model)
         
+        // 设置RecyclerView和按钮
         setupRecyclerView()
         setupButtons()
     }
     
     private fun setupRecyclerView() {
-        binding.recyclerModels.apply {
+        // 获取RecyclerView
+        val recyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerModels)
+        recyclerView.apply {
             layoutManager = LinearLayoutManager(this@ImportActivity)
             adapter = modelAdapter
         }
@@ -51,7 +67,9 @@ class ImportActivity : AppCompatActivity() {
     }
     
     private fun setupButtons() {
-        binding.fabImport.setOnClickListener {
+        // 导入按钮
+        val fabImport = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabImport)
+        fabImport.setOnClickListener {
             openFilePicker()
         }
     }
@@ -69,7 +87,8 @@ class ImportActivity : AppCompatActivity() {
     
     private fun handleSelectedFile(uri: Uri) {
         // 显示加载指示器
-        binding.progressBar.visibility = View.VISIBLE
+        val progressBar = findViewById<android.widget.ProgressBar>(R.id.progressBar)
+        progressBar.visibility = View.VISIBLE
         
         try {
             // 获取文件名
@@ -99,8 +118,9 @@ class ImportActivity : AppCompatActivity() {
             
         } catch (e: Exception) {
             // 显示错误消息
+            val rootView = findViewById<android.view.View>(android.R.id.content)
             Snackbar.make(
-                binding.root,
+                rootView,
                 getString(R.string.error_loading_model),
                 Snackbar.LENGTH_LONG
             ).show()
@@ -108,7 +128,7 @@ class ImportActivity : AppCompatActivity() {
             e.printStackTrace()
         } finally {
             // 隐藏加载指示器
-            binding.progressBar.visibility = View.GONE
+            progressBar.visibility = View.GONE
         }
     }
     
@@ -145,7 +165,10 @@ class ImportActivity : AppCompatActivity() {
         modelAdapter.submitList(models)
         
         // 如果没有最近的模型，显示空视图
-        binding.emptyView.visibility = if (models.isEmpty()) View.VISIBLE else View.GONE
+        val emptyView = findViewById<android.view.View>(R.id.emptyView)
+        if (emptyView != null) {
+            emptyView.visibility = if (models.isEmpty()) View.VISIBLE else View.GONE
+        }
     }
     
     private fun addToRecentModels(model: Model) {

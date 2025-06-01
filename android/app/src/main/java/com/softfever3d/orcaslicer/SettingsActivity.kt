@@ -3,12 +3,14 @@ package com.softfever3d.orcaslicer
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.Toolbar
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -23,20 +25,25 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySettingsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        // 设置工具栏
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        // 加载设置Fragment
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.settings_container, SettingsFragment())
-                .commit()
+        
+        // 根据屏幕方向加载不同的布局
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_settings_landscape)
+        } else {
+            setContentView(R.layout.activity_settings)
         }
+        
+        // 设置工具栏
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        
+        // 加载设置片段
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.settings_container, SettingsFragment())
+            .commit()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
